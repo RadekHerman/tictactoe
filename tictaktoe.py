@@ -7,7 +7,6 @@ def main():
     player_1, player_2 = choose_players()
     player = random.choice([player_1, player_2])
 
-    print(player, letter, "player letter")
     while True:
         print("--"*35)
         print(f"{player} Player with the letter {letter} turn.")
@@ -15,7 +14,7 @@ def main():
         for row in board_nums:
             print('|'.join(row))
 
-        print("\nPlease use the above numbers to place yor player on the board below.")
+        print(f"\nPlease use the above numbers to place your >> {letter} << on the board below.")
 
         for row in board:
             print('|'.join(row))
@@ -27,14 +26,14 @@ def main():
             choice = get_random_move(board)        
         elif player == "AI":
             if letter == 'O':
-                choice = get_human_ai_move(board)
+                choice = get_ai_move(board, 'O', 'X', True)
             else:
-                choice = get_ai_move(board)
+                choice = get_ai_move(board, 'X', 'O', True)
 
         board = board_update(choice, board, letter)
 
         if winner(board, letter):
-            print(f'{player} with letter {letter} WINS!')
+            print(f'{player} Player with letter {letter} WINS!')
             break
         
         if board_has_no_moves(board):
@@ -49,27 +48,28 @@ def main():
     for row in board:
         print('|'.join(row))
     
-    next_game=(input("Do you want to play next game? (y)")).lower()
+    next_game=(input("Do you want to play next game (y)? ")).lower()
     if next_game == 'y':
         main()
     else: 
         exit()
 
 
-def minimax(board, max_player):
-    if winner(board, 'O'): #human
+def minimax(board, letter, opponent_letter, max_player):
+
+    if winner(board, letter): 
         return 1
-    elif winner(board, 'X'): #ai
+    if winner(board, opponent_letter):
         return -1
-    if board_has_no_moves(board):
+    elif  board_has_no_moves(board):
         return 0
     
     if max_player:    
         max_evaluation = -1000
         for place in range(1,10):
             if if_place_available(place, board):
-                board = board_update(place, board, 'O')
-                current_evaluation = minimax(board, False)
+                board = board_update(place, board, letter)
+                current_evaluation = minimax(board, letter, opponent_letter, False)
                 max_evaluation = max(max_evaluation, current_evaluation)
                 board = board_update(place, board, '.')
         return max_evaluation
@@ -78,36 +78,30 @@ def minimax(board, max_player):
         min_evaluation = 1000
         for place in range(1,10):
             if if_place_available(place, board):
-                board = board_update(place, board, 'X')
-                current_evaluation = minimax(board, True)
+                board = board_update(place, board, opponent_letter)
+                current_evaluation = minimax(board, letter, opponent_letter, True)
                 min_evaluation = min(min_evaluation, current_evaluation)
                 board = board_update(place, board, '.')
         return min_evaluation
 
-##### minimax end
-
-def get_human_ai_move(board):
-    best_score = -1000
+# one function for both players 'O', 'X'
+# this implementation of ai move and minimax
+# forced by random choice of letters and players at the beginning of the game 
+def get_ai_move(board, letter, opponent_letter, max_player):
+    best_score = -1000 if max_player else 1000
     for place in range(1,10):
         if if_place_available(place, board):
-            board = board_update(place, board, 'O')
-            score = minimax(board, False)
+            board = board_update(place, board, letter)
+            score = minimax(board, letter, opponent_letter, False)
             board = board_update(place, board, '.')
-            if score > best_score:
-                best_score = score
-                best_choice = place
-    return best_choice
-
-def get_ai_move(board):
-    best_score = 1000
-    for place in range(1,10):
-        if if_place_available(place, board):
-            board = board_update(place, board, 'X')
-            score = minimax(board, True )
-            board = board_update(place, board, '.')
-            if score < best_score:
-                best_score = score
-                best_choice = place
+            if max_player:
+                if score > best_score:
+                    best_score = score
+                    best_choice = place
+            else:
+                if score < best_score:
+                    best_score = score
+                    best_choice = place
     return best_choice
 
 def get_random_move(board):
@@ -136,14 +130,16 @@ def get_human_move(board):
         
 def choose_players():
     print("Please choose a type of game:")
-    print("1. Human vs Human.")
-    print("2. Human vs AI")
-    print("3. AI vs AI")
-    print("4. Random Computer vs AI")
-    print("5. Random Computer vs Random Computer")
+    print("The player who starts the game and they letter will be chosen in random.")
+    print("1. Human vs Human")
+    print("2. Human vs Random Computer")
+    print("3. Human vs AI")
+    print("4. AI vs AI")
+    print("5. Random Computer vs AI")
+    print("6. Random Computer vs Random Computer")
     game_choice = input("..: ")
-    if game_choice not in ['1', '2', '3', '4', '5']:
-        print("Please choose 1, 2, 3, 4, 5")
+    if game_choice not in ['1', '2', '3', '4', '5', '6']:
+        print("Please choose 1, 2, 3, 4, 5, 6")
         choose_players()
     else:
         if game_choice == '1':
@@ -151,14 +147,17 @@ def choose_players():
             player_2 = 'Human'
         elif game_choice == '2':
             player_1 = 'Human'
-            player_2 = 'AI'
+            player_2 = 'Random'
         elif game_choice == '3':
-            player_1 = 'AI'
+            player_1 = 'Human'
             player_2 = 'AI'
         elif game_choice == '4':
-            player_1 = 'Random'
+            player_1 = 'AI'
             player_2 = 'AI'
         elif game_choice == '5':
+            player_1 = 'Random'
+            player_2 = 'AI'
+        elif game_choice == '6':
             player_1 = 'Random'
             player_2 = 'Random'
         return player_1, player_2
