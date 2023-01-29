@@ -1,5 +1,5 @@
 import random
-
+import os
 
 def main():
     board = [["." for x in range(3)] for y in range(3)]
@@ -139,6 +139,7 @@ def get_human_move(board):
 
 
 def choose_players():
+    os.system('clear')
     print("Please choose a type of game:")
     print("The player who starts the game and they letter will be chosen in random.")
     print("1. Human vs Human")
